@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model LogSkillAssociation {
+  userSkillId    String
+  userSkillLogId String
+  skill          UserSkill    @relation(fields: [userSkillId], references: [id])
+  skillLog       UserSkillLog @relation(fields: [userSkillLogId], references: [id])
+
+  @@id([userSkillId, userSkillLogId])
+}
+
+model UserSkillLog {
+  id                   String                @id
+  userId               String
+  logContent           String
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  isDeleted            Boolean               @default(false)
+  user                 User                  @relation(fields: [userId], references: [id])
+  logSkillAssociations LogSkillAssociation[]
+}
+
+enum SkillRating {
+  SUPER_CONFIDENT
+  CONFIDENT
+  SO_SO
+  SOME_FAMILIARITY
+  NO_FAMILIARITY
+}
+
+model UserSkillGoal {
+  id           String      @id
+  targetRating SkillRating
+  notes        String?
+  deadline     DateTime?
+  createdAt    DateTime    @default(now())
+  isDeleted    Boolean     @default(false)
+  userSkillId  String
+  userSkill    UserSkill   @relation(fields: [userSkillId], references: [id])
+}
+
+model UserSkillRating {
+  id          String      @id
+  rating      SkillRating
+  createdAt   DateTime    @default(now())
+  isDeleted   Boolean     @default(false)
+  userSkillId String
+  userSkill   UserSkill   @relation(fields: [userSkillId], references: [id])
+}
+
+model UserSkill {
+  id                   String                @id
+  user                 User                  @relation(fields: [userId], references: [id])
+  userId               String                @unique
+  name                 String
+  description          String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  isDeleted            Boolean               @default(false)
+  ratings              UserSkillRating[]
+  goals                UserSkillGoal[]
+  logSkillAssociations LogSkillAssociation[]
+}
+
+model User {
+  id         String         @id
+  email      String         @unique
+  firstName  String?
+  lastName   String?
+  salt       Bytes          @db.ByteA
+  hash       Bytes          @db.ByteA
+  iterations Int
+  isDeleted  Boolean        @default(false)
+  skills     UserSkill[]
+  skillLogs  UserSkillLog[]
+}
