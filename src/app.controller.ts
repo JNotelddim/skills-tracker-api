@@ -7,6 +7,11 @@ import { v4 as uuid } from 'uuid';
 export class AppController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('test')
+  async getTest() {
+    return 'Hello!';
+  }
+
   @Post('user')
   async signupUser(
     @Body() userData: { firstName?: string; lastName?: string; email: string },
