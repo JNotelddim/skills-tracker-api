@@ -9,13 +9,13 @@ export class AppController {
 
   @Post('user')
   async signupUser(
-    @Body() userData: { name?: string; email: string },
+    @Body() userData: { firstName?: string; lastName?: string; email: string },
   ): Promise<UserModel> {
     return this.userService.createUser({
       ...userData,
       id: uuid(),
-      salt: Buffer.alloc(64, 1),
-      hash: Buffer.alloc(64, 0),
+      salt: Buffer.alloc(8, 0),
+      hash: Buffer.alloc(8, 0),
       iterations: 0,
     });
   }
