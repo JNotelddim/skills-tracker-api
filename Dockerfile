@@ -1,7 +1,22 @@
-FROM node:16-alpine
-# Adding build tools to make yarn install work on Apple silicon / arm64 machines
-RUN apk add --no-cache python3 g++ make
-WORKDIR /src
+# Base image
+FROM node:lts
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+COPY package*.json ./
+
+# Install app dependencies
+RUN yarn install
 COPY . .
-RUN yarn install --production
-CMD ["node", "main.js"]
+
+RUN npx prisma generate
+COPY ./prisma prisma
+
+# Bundle app source
+# Creates a "dist" folder with the production build
+RUN yarn build
+
+# Start the server using the production build
+CMD [ "node", "dist/main.js" ]
