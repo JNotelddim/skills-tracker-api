@@ -9,7 +9,7 @@ export class AppController {
 
   @Get('test')
   async getTest() {
-    return 'Hello!';
+    return 'Welcome to Skills Tracker API!';
   }
 
   @Post('user')
