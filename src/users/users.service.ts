@@ -1,17 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
+import { DatabaseService } from '../database/database.service';
 import { User, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private db: DatabaseService) {}
+
+  // TODO: only return data that's appropriate to share
+  // ie, remove the 'salt', 'hash', 'iterations', info
 
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
   ): Promise<User | null> {
-    return this.prisma.user.findUnique({
+    // TODO: let middleware handle soft deleted data
+    const user = this.db.user.findUnique({
       where: userWhereUniqueInput,
     });
+    if (!(await user).isDeleted) {
+      return user;
+    } else {
+      return null;
+    }
   }
 
   async users(params: {
@@ -22,17 +31,20 @@ export class UserService {
     orderBy?: Prisma.UserOrderByWithRelationInput;
   }): Promise<User[]> {
     const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.user.findMany({
+    return this.db.user.findMany({
       skip,
       take,
       cursor,
-      where,
+      where: {
+        ...where,
+        isDeleted: false,
+      },
       orderBy,
     });
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
+    return this.db.user.create({
       data,
     });
   }
@@ -42,15 +54,18 @@ export class UserService {
     data: Prisma.UserUpdateInput;
   }): Promise<User> {
     const { where, data } = params;
-    return this.prisma.user.update({
+    return this.db.user.update({
       data,
       where,
     });
   }
 
   async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-    return this.prisma.user.delete({
+    return this.db.user.update({
       where,
+      data: {
+        isDeleted: true,
+      },
     });
   }
 }

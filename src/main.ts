@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
-import { PrismaService } from './prisma.service';
+import { DatabaseService } from './database/database.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const prismaService = app.get(PrismaService);
-  await prismaService.enableShutdownHooks(app);
+  const databaseService = app.get(DatabaseService);
+  await databaseService.enableShutdownHooks(app);
   await app.listen(8080);
 }
 bootstrap();
