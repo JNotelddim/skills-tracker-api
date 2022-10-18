@@ -58,6 +58,7 @@ model UserSkillRating {
   userSkill   UserSkill   @relation(fields: [userSkillId], references: [id])
 }
 
+// TODO: remove unique constraint on UserSkill's userId
 model UserSkill {
   id                   String                @id
   user                 User                  @relation(fields: [userId], references: [id])
